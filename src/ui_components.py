@@ -446,29 +446,29 @@ class RaceControlComponent(BaseComponent):
         self.margin = margin
 
     def draw(self, window):
-        # 데이터가 없으면 그리지 않음
+        # didn't draw without data
         if not hasattr(window, 'race_control_messages') or not window.race_control_messages:
             return
 
         idx = min(int(window.frame_index), window.n_frames - 1)
         current_time = window.frames[idx]["t"]
 
-        # [좌표] 우측 하단 (Bottom Right)
+        # [coordinate] Bottom Right
         rc_x_center = window.width - self.margin - (self.width / 2)
         rc_y_center = self.margin + (self.height / 2)
 
-        # 배경
+        # background
         rc_rect = arcade.XYWH(rc_x_center, rc_y_center, self.width, self.height)
         arcade.draw_rect_filled(rc_rect, (0, 0, 0, 180))
         arcade.draw_rect_outline(rc_rect, arcade.color.WHITE, 1)
 
-        # 헤더
+        # header
         arcade.Text("Race Control",
                     rc_x_center, rc_y_center + self.height / 2 - 10,
                     arcade.color.ORANGE, 12, bold=True,
                     anchor_x="center", anchor_y="top").draw()
 
-        # 메시지 필터링 & 정렬
+        # filtering messages & aligning
         valid_msgs = [m for m in window.race_control_messages if m['time'] <= current_time]
         valid_msgs.sort(key=lambda x: x['time'], reverse=True)
         display_msgs = valid_msgs[:5]

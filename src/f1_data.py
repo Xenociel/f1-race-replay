@@ -26,7 +26,7 @@ DT = 1 / FPS
 
 def process_race_control_messages(session, global_t_min):
     """
-    세션에서 레이스 컨트롤 메시지를 추출하고 리플레이 타임라인에 맞게 시간을 보정합니다.
+    extract race control message from session & correcting time data for aligning replay timeline
     """
     race_control_messages = []
     t0_date = session.t0_date
@@ -36,7 +36,7 @@ def process_race_control_messages(session, global_t_min):
 
     rcm = session.race_control_messages
 
-    # 시간순 정렬
+    # Sort chronologically
     sort_col = 'SessionTime' if 'SessionTime' in rcm.columns else 'Time'
     if sort_col in rcm.columns:
         rcm = rcm.sort_values(by=sort_col)
@@ -51,7 +51,7 @@ def process_race_control_messages(session, global_t_min):
 
             if seconds is None: continue
 
-            # 리플레이 시작 시점 기준 보정
+            # Correction based on the start time of the replay
             msg_time = seconds - global_t_min
 
             race_control_messages.append({

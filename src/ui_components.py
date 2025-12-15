@@ -540,6 +540,24 @@ class RaceProgressBarComponent(BaseComponent):
         progress = (x - self._bar_left) / self._bar_width
         return int(progress * self._total_frames)
         
+    def draw(self, window):
+        """Render the progress bar with all markers"""
+        self._calculate_bar_dimensions(window)
+        
+        current_frame = int(getattr(window, 'frame_index', 0))
+        
+        bar_center_y = self.bottom + self.height / 2
+        
+        # 1. Draw background bar
+        bg_rect = arcade.XYWH(
+            self._bar_left + self._bar_width / 2,
+            bar_center_y,
+            self._bar_width,
+            self.height
+        )
+        arcade.draw_rect_filled(bg_rect, self.COLORS["background"])
+        arcade.draw_rect_outline(bg_rect, self.COLORS["progress_border"], 2)
+        
 # Build track geometry from example lap telemetry
 
 def build_track_from_example_lap(example_lap, track_width=200):

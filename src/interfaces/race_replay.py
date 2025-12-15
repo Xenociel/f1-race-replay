@@ -9,7 +9,7 @@ import threading
 # Kept these as "default" starting sizes, but they are no longer hard limits
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
-SCREEN_TITLE = "F1 Replay System"
+SCREEN_TITLE = "F1 Race Replay System"
 
 # class F1RaceReplayWindow(arcade.Window):
 #    def __init__(self, frames, track_statuses, example_lap, drivers, title,

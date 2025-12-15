@@ -5,7 +5,7 @@ from src.interfaces.race_replay import ReplayView, MainMenuView, run_main_menu
 # Kept these as "default" starting sizes, but they are no longer hard limits
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
-SCREEN_TITLE = "F1 Replay System"
+SCREEN_TITLE = "F1 Race Replay System"
 
 
 def run_arcade_replay(frames=None, track_statuses=None, example_lap=None, drivers=None, title=None,

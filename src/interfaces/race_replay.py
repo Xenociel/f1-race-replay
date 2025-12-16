@@ -2,7 +2,15 @@ import os
 import arcade
 import numpy as np
 from src.f1_data import FPS
-from src.ui_components import LeaderboardComponent, WeatherComponent, LegendComponent, DriverInfoComponent, build_track_from_example_lap
+from src.ui_components import (
+    LeaderboardComponent, 
+    WeatherComponent, 
+    LegendComponent, 
+    DriverInfoComponent, 
+    RaceProgressBarComponent,
+    extract_race_events,
+    build_track_from_example_lap
+)
 
 
 SCREEN_WIDTH = 1920
@@ -41,6 +49,23 @@ class F1RaceReplayWindow(arcade.Window):
         self.weather_comp = WeatherComponent(left=20, top_offset=170)
         self.legend_comp = LegendComponent(x=max(12, self.left_ui_margin - 320))
         self.driver_info_comp = DriverInfoComponent(left=20, width=300)
+        
+        # Progress bar component with race event markers
+        self.progress_bar_comp = RaceProgressBarComponent(
+            left_margin=left_ui_margin,
+            right_margin=right_ui_margin,
+            bottom=30,
+            height=24,
+            marker_height=16
+        )
+        
+        # Extract race events for the progress bar
+        race_events = extract_race_events(frames, track_statuses, total_laps or 0)
+        self.progress_bar_comp.set_race_data(
+            total_frames=len(frames),
+            total_laps=total_laps or 0,
+            events=race_events
+        )
 
         # Build track geometry (Raw World Coordinates)
         (self.plot_x_ref, self.plot_y_ref,
@@ -187,7 +212,7 @@ class F1RaceReplayWindow(arcade.Window):
         self.update_scaling(width, height)
         # notify components
         self.leaderboard_comp.x = max(20, self.width - self.right_ui_margin + 12)
-        for c in (self.leaderboard_comp, self.weather_comp, self.legend_comp, self.driver_info_comp):
+        for c in (self.leaderboard_comp, self.weather_comp, self.legend_comp, self.driver_info_comp, self.progress_bar_comp):
             c.on_resize(self)
 
     def world_to_screen(self, x, y):
@@ -367,6 +392,7 @@ class F1RaceReplayWindow(arcade.Window):
             "[←/→]    Rewind / FastForward",
             "[↑/↓]    Speed +/- (0.5x, 1x, 2x, 4x)",
             "[R]       Restart",
+            "[B]       Toggle Progress Bar",
         ]
         
         for i, line in enumerate(legend_lines):
@@ -381,6 +407,9 @@ class F1RaceReplayWindow(arcade.Window):
         
         # Selected driver info component
         self.driver_info_comp.draw(self)
+        
+        # Race Progress Bar with event markers (DNF, flags, leader changes)
+        self.progress_bar_comp.draw(self)
                     
     def on_update(self, delta_time: float):
         if self.paused:
@@ -411,10 +440,18 @@ class F1RaceReplayWindow(arcade.Window):
         elif symbol == arcade.key.R:
             self.frame_index = 0.0
             self.playback_speed = 1.0
+        elif symbol == arcade.key.B:
+            self.progress_bar_comp.toggle_visibility() # toggle progress bar visibility
 
     def on_mouse_press(self, x: float, y: float, button: int, modifiers: int):
         # forward to components; stop at first that handled it
+        if self.progress_bar_comp.on_mouse_press(self, x, y, button, modifiers):
+            return
         if self.leaderboard_comp.on_mouse_press(self, x, y, button, modifiers):
             return
         # default: clear selection if clicked elsewhere
         self.selected_driver = None
+        
+    def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
+        """Handle mouse motion for hover effects on progress bar."""
+        self.progress_bar_comp.on_mouse_motion(self, x, y, dx, dy)

@@ -2,7 +2,16 @@ import os
 import arcade
 import numpy as np
 from src.f1_data import FPS
-from src.ui_components import LeaderboardComponent, WeatherComponent, LegendComponent, DriverInfoComponent, build_track_from_example_lap, RaceControlComponent
+from src.ui_components import (
+    LeaderboardComponent,
+    WeatherComponent,
+    LegendComponent,
+    DriverInfoComponent,
+    RaceProgressBarComponent,
+    extract_race_events,
+    build_track_from_example_lap,
+    RaceControlComponent
+)
 
 
 # Kept these as "default" starting sizes, but they are no longer hard limits
@@ -44,6 +53,22 @@ class F1RaceReplayWindow(arcade.Window):
         self.legend_comp = LegendComponent(x=max(12, self.left_ui_margin - 320))
         self.driver_info_comp = DriverInfoComponent(left=20, width=300)
         self.rc_comp = RaceControlComponent()
+        # Progress bar component with race event markers
+        self.progress_bar_comp = RaceProgressBarComponent(
+            left_margin=left_ui_margin,
+            right_margin=right_ui_margin,
+            bottom=30,
+            height=24,
+            marker_height=16
+        )
+
+        # Extract race events for the progress bar
+        race_events = extract_race_events(frames, track_statuses, total_laps or 0)
+        self.progress_bar_comp.set_race_data(
+            total_frames=len(frames),
+            total_laps=total_laps or 0,
+            events=race_events
+        )
 
         # Build track geometry (Raw World Coordinates)
         (self.plot_x_ref, self.plot_y_ref,
@@ -387,7 +412,11 @@ class F1RaceReplayWindow(arcade.Window):
 
         # Race Control component
         self.rc_comp.draw(self)
-                    
+
+        # Race Progress Bar with event markers (DNF, flags, leader changes)
+        self.progress_bar_comp.draw(self)
+
+
     def on_update(self, delta_time: float):
         if self.paused:
             return
